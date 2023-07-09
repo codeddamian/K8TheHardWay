@@ -75,3 +75,63 @@ To keep our cluster up to date we may have to upgrade k8 with kubeadm
 
  - uncordon the worker plane node
      { kubectl uncordon <node_name>}
+
+
+## KodeKLoud 
+- Os Upgrades
+   If you have multiple replicas of a pod if your node goes off > 5mins then the pods are available.
+However, if the nodes without replica come back before 5 minutes then the pods come back online.
+However, if the node comes back later then the pods are gone and called dead -The time it waits for a pod to comeback is called **--pod-eviction-timout=5m0s**
+
+SO if you not certain about if a node will be back then you can drain the node. 
+- kubectl drain node-1   #Hence no pods can be scheduled on it and the pods move to other nodes.
+- Kubectl uncordon node-1 #  Will remove the drain on the node-1 so that pods can be scheduled on it
+- Kubectl cordon node-1  #Makes a node not schedulable but doesn't drain the pod off it.
+
+Cluster Upgrade Introduction. 
+- None of the control plane components should be at a k=version abobe the kube-api-sever,
+  since this the component that all the rest of the components talk to i.e if the kubeap-server is 
+ at version X then all other components should be at X-1 or X-2. Not the case of the Kubectl 
+ cause Kubectl can be on X+1 or X-1.
+
+- The recommended upgrade option is from  v1.10 to v1.11 to v1.12 to v1.13
+
+
+### Worker Node Upgrade steps 
+- Drain the node upgrade
+   { kubectl drain <node_name> --ignore-daemonsets --force}
+- 
+- upgrade kubeadm & Kubelet
+   - apt-get upgrade -y kubeadm=1.12.0-00
+   - apt-get upgrade -y kubelet=1.12.0-00
+- upgrade the kubelet conf 
+   sudo Kubeadm upgrade node config --kubelet-version v1.12.0
+- upgrade kubelet and kubectl on worker plane node
+     sudo apt-get update && \
+     Sudo apt-get install -y --allow-change-held-packages kubelet=1.22.2-00 kubctl=1.22.2-00
+##### Just incase there's a change to the conf file we would restart the daemon and restart kubelet
+         - sudo systemctl daemon-reload
+         - sudo systemctl restart kubelet
+         -kubectl uncordon node-1
+
+
+To know which nodes can host a workload you need tocheck the taints on them with the command
+kubectl get nodes # To see the nodes that belong to the cluster then
+kubectl describe nodes  controlplane | grep -i taint # to check the taints on the node
+
+To see how many apps are hosted on a cluster check the deployments 
+  - kubectl get deployments
+
+To see how which nodes the pods are on 
+ - kubectl get pods -o wide
+
+To know the latest version on the k8 look at the version on tghe command 
+- kubeadm upgrade plan  #check the remote version.
+
+  To backup all deplyed service
+  - kubectl get all  --all-namespaces -o yaml > file_name
+  
+
+
+  
+   
