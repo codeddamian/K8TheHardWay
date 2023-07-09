@@ -128,7 +128,7 @@ To see how which nodes the pods are on
 To know the latest version on the k8 look at the version on tghe command 
 - kubeadm upgrade plan  #check the remote version.
 
-  To backup all deplyed service
+  To backup all service by querying the kube-API server 
   - kubectl get all  --all-namespaces -o yaml > file_name
   
 
